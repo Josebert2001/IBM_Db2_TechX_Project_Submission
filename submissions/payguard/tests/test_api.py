@@ -1,7 +1,5 @@
 import pytest
-from fastapi.testclient import TestClient
 
-import main
 from analyst import UnsafeSQL, guard_sql
 
 
@@ -18,14 +16,6 @@ class FakePayPal:
     def capture_order(self, order_id):
         return {"status": "COMPLETED", "purchase_units": [{"payments": {"captures": [{"id": "CAP1"}]}}],
                 "payer": {"email_address": "buyer@example.com"}}
-
-
-@pytest.fixture()
-def client(repo, embedder):
-    svc = main.Services(repo, embedder, FakePayPal())
-    main.app.dependency_overrides[main.get_services] = lambda: svc
-    yield TestClient(main.app), svc
-    main.app.dependency_overrides.clear()
 
 
 SAFE = {"merchant": "Akwa Books", "payee_email": "orders@akwa-books.example", "amount": 45,

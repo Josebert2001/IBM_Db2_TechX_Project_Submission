@@ -7,8 +7,8 @@ import json
 from pathlib import Path
 
 from config import settings
-from db import Db2Repository
-from embeddings import get_embedder
+from adapters.db2 import Db2Repository
+from adapters.embeddings import get_embedder
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 TRAINING_CSV = DATA_DIR / "handmade_all.csv"
@@ -37,6 +37,9 @@ def load_examples(repo, embedder) -> dict:
     """Fixed training-file input: never consume the evaluation CSV."""
     rows = read_examples()
     repo.init_examples(embedder.dim)
+    # Retire leaked rows from older installs without reading evaluation messages here.
+    retired = json.loads((DATA_DIR / "retired_example_ids.json").read_text(encoding="utf-8"))
+    repo.delete_examples(retired)
     stored = repo.get_meta("embedder")
     if stored and stored != embedder.name:
         raise ValueError("Embedding provider changed; run src/seed.py to rebuild consistently")

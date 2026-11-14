@@ -11,10 +11,10 @@ import random
 import sys
 
 from config import settings
-from db import Db2Repository
-from embeddings import get_embedder
+from adapters.db2 import Db2Repository
+from adapters.embeddings import get_embedder
 from load_scam_examples import load_examples
-from risk import RiskEngine, ScreenRequest
+from domain.scoring import RiskEngine, ScreenRequest
 from seed_data import ENTITIES, HISTORY, PATTERNS, REPORTS
 
 

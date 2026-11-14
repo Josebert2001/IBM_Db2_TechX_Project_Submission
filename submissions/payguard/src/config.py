@@ -1,48 +1,56 @@
-"""Central configuration, read from environment variables (.env supported)."""
-from __future__ import annotations
-
-import os
-from dataclasses import dataclass, field
+"""Validated settings. Environment variables override the private .env file."""
 from pathlib import Path
+from typing import Literal
 
-try:
-    from dotenv import load_dotenv
-
-    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-except ImportError:  # dotenv is optional
-    pass
+from pydantic import Field, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-def _bool(name: str, default: bool = False) -> bool:
-    return os.getenv(name, str(default)).strip().lower() in {"1", "true", "yes", "on"}
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).resolve().parent.parent / ".env",
+        env_file_encoding="utf-8", extra="ignore", frozen=True,
+    )
+    db2_host: str = "localhost"
+    db2_port: str = "50000"
+    db2_database: str = "PAYGUARD"
+    db2_user: str = "db2inst1"
+    db2_password: str = Field("", repr=False)
+    db2_ssl: bool = False
+    db2_pool_min: int = Field(2, ge=0)
+    db2_pool_max: int = Field(10, ge=1, le=100)
+    db2_pool_timeout: float = Field(5, gt=0)
+    db2_connect_timeout: int = Field(5, ge=1)
+    db2_query_timeout: int = Field(3, ge=1)
+    embed_dim: int = Field(768, ge=1, le=32768)
+    embed_provider: Literal["local", "gemini", "auto"] = "local"
+    gemini_api_key: str = Field("", repr=False)
+    gemini_model: str = "gemini-3.8-flash"
+    gemini_embed_model: str = "gemini-embedding-001"
+    gemini_timeout: float = Field(5, gt=0)
+    investigation_timeout: float = Field(10, gt=0)
+    paypal_client_id: str = ""
+    paypal_client_secret: str = Field("", repr=False)
+    paypal_base_url: str = "https://api-m.sandbox.paypal.com"
+    paypal_currency: str = "USD"
+    review_threshold: int = Field(35, ge=0, le=100)
+    block_threshold: int = Field(65, ge=0, le=100)
+    cache_size: int = Field(512, ge=0)
+    entity_cache_ttl: float = Field(5, ge=0)
+    pattern_cache_ttl: float = Field(10, ge=0)
+    embedding_cache_ttl: float = Field(60, ge=0)
+    rate_limit_per_minute: int = Field(60, ge=1)
+    rate_limit_max_ips: int = Field(10000, ge=1)
+    platform_api_key: str = Field("", repr=False)
+    platform_demo_enabled: bool = True
 
-
-@dataclass(frozen=True)
-class Settings:
-    # --- IBM Db2 ---
-    db2_host: str = field(default_factory=lambda: os.getenv("DB2_HOST", "localhost"))
-    db2_port: str = field(default_factory=lambda: os.getenv("DB2_PORT", "50000"))
-    db2_database: str = field(default_factory=lambda: os.getenv("DB2_DATABASE", "PAYGUARD"))
-    db2_user: str = field(default_factory=lambda: os.getenv("DB2_USER", "db2inst1"))
-    db2_password: str = field(default_factory=lambda: os.getenv("DB2_PASSWORD", ""))
-    db2_ssl: bool = field(default_factory=lambda: _bool("DB2_SSL", False))
-
-    # --- Embeddings / LLM ---
-    embed_dim: int = field(default_factory=lambda: int(os.getenv("EMBED_DIM", "768")))
-    embed_provider: str = field(default_factory=lambda: os.getenv("EMBED_PROVIDER", "local"))  # local|gemini|auto
-    gemini_api_key: str = field(default_factory=lambda: os.getenv("GEMINI_API_KEY", ""))
-    gemini_model: str = field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.5-flash"))
-    gemini_embed_model: str = field(default_factory=lambda: os.getenv("GEMINI_EMBED_MODEL", "gemini-embedding-001"))
-
-    # --- PayPal (sandbox) ---
-    paypal_client_id: str = field(default_factory=lambda: os.getenv("PAYPAL_CLIENT_ID", ""))
-    paypal_client_secret: str = field(default_factory=lambda: os.getenv("PAYPAL_CLIENT_SECRET", ""))
-    paypal_base_url: str = field(default_factory=lambda: os.getenv("PAYPAL_BASE_URL", "https://api-m.sandbox.paypal.com"))
-    paypal_currency: str = field(default_factory=lambda: os.getenv("PAYPAL_CURRENCY", "USD"))
-
-    # --- Risk thresholds ---
-    review_threshold: int = field(default_factory=lambda: int(os.getenv("REVIEW_THRESHOLD", "35")))
-    block_threshold: int = field(default_factory=lambda: int(os.getenv("BLOCK_THRESHOLD", "65")))
+    @model_validator(mode="after")
+    def validate_limits(self):
+        if self.db2_pool_min > self.db2_pool_max:
+            raise ValueError("DB2_POOL_MIN must be <= DB2_POOL_MAX")
+        if self.review_threshold >= self.block_threshold:
+            raise ValueError("REVIEW_THRESHOLD must be below BLOCK_THRESHOLD")
+        return self
 
     @property
     def llm_enabled(self) -> bool:
@@ -54,13 +62,11 @@ class Settings:
 
     @property
     def db2_conn_str(self) -> str:
-        s = (
-            f"DATABASE={self.db2_database};HOSTNAME={self.db2_host};PORT={self.db2_port};"
-            f"PROTOCOL=TCPIP;UID={self.db2_user};PWD={self.db2_password};"
-        )
-        if self.db2_ssl:
-            s += "SECURITY=SSL;"
-        return s
+        value = (f"DATABASE={self.db2_database};HOSTNAME={self.db2_host};PORT={self.db2_port};"
+                 f"PROTOCOL=TCPIP;UID={self.db2_user};PWD={self.db2_password};"
+                 f"CONNECTTIMEOUT={self.db2_connect_timeout};"
+                 f"QUERYTIMEOUT={self.db2_query_timeout};")
+        return value + ("SECURITY=SSL;" if self.db2_ssl else "")
 
 
 settings = Settings()

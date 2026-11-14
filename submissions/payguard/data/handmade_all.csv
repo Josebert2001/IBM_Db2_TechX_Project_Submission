@@ -89,18 +89,3 @@ safe,Happy birthday Chidi! Wishing you a great year ahead. Let's celebrate this 
 safe,"Your Opay transfer of N1,000.00 to your friend was successful. Ref: 240531...",hand_reviewed
 safe,"Debit Amt:NGN2,000.00 Acc:012******345 Desc:112EFGH2612346aB/MOBILE TRF TO MMF/ /JOHN DOE Date:03/10/2026",hand_reviewed
 safe,Don't Miss Out! Grab your N100 FREE airtime now! Only 24h left. Grab here: https://opayapp.onelink.me/xxxx/xxxxxxx,hand_reviewed
-bank_phishing,Your account will be blocked within 24 hours. Click here to verify your BVN at example-bank-verify.com.,external_heldout
-fake_job,"You've been shortlisted for a job. Pay a N7,500 registration fee to secure your slot.",external_heldout
-fake_job,"A reputable company in Abuja is recruiting. Job title: Office Assistant, Salary: 250,000 naira. No experience required. Send your CV to 08012345678.",external_heldout
-fake_job,"Congratulations, your name is on the shortlist for NNPC/Customs. Send N15,000 to secure your slot.",external_heldout
-other_scam,ONDO GOVT COMMENCES DISBURSEMENT OF N220M TO BUSINESS OWNERS AND ARTISANS MSMES. The 2024 online registration is now out. Check Eligibility and Apply here example-grant-portal.com,external_heldout
-other_scam,"N150,000 grant by OPay. Offer is ending this week. Click the link to apply.",external_heldout
-other_scam,"FG Youth Empowerment Grant: apply now to receive N250,000.",external_heldout
-other_scam,"Hi mummy, this is my new number. Abeg send 20k urgently.",external_heldout
-other_scam,Your parcel is held at customs. Pay the clearance fee to release it.,external_heldout
-investment_scam,Guaranteed 30% weekly returns. Our account manager will guide you.,external_heldout
-safe,"AlertZ: You have a credit of NGN 5,000.00 to your account 0123****. Ref: 123456. Bal: NGN 20,000.00. Thank you for banking with us.",external_heldout
-safe,"Your account has been debited with NGN 2,000.00. Available balance: NGN 18,000.00. Transaction ref: 123456. Contact us for assistance.",external_heldout
-safe,"Never share your 16-digit card number, password, PIN, CVV, BVN, or OTP with anyone. We will NEVER ask for such information.",external_heldout
-safe,"Dear Customer, With the Central Bank of Nigeria's recent review of the Monetary Policy Rate (MPR) the interest rate on your Savings Account has been reviewed to 6.9% per annum.",external_heldout
-safe,"Dear Esteemed Customer, we will be conducting a scheduled system maintenance on our online banking platform. Time: 10:00 PM - 7:00 AM.",external_heldout
